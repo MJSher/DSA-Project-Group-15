@@ -30,12 +30,13 @@ std::vector<int> KMP::create_LPS()
     {
         if (this->pattern[i] == this->pattern[prev_index])
         {
-            lps_vector.push_back((lps_vector[prev_index]) + 1);
             prev_index++;
+            lps_vector.push_back(prev_index);
+
         }
         else
         {
-            if (lps_vector[prev_index] == 0)
+            if (prev_index == 0)
             {
                 lps_vector.push_back(0);
             }

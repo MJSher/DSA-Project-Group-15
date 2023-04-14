@@ -23,18 +23,17 @@ KMP::KMP(std::string input_text, std::string input_pattern)
 std::vector<int> KMP::create_LPS()
 {
     std::vector<int> lps_vector;
-    int counter = 0;
     int prev_index = 0; //prefix. The i in the loop is suffix.
     lps_vector.push_back(0); //the first element of an LPS vector is always 0
-    for (int i = 1; i < this->pattern.size(); i++)
+    for (int i = 1; i < this->pattern.size(); i++) //i is current index
     {
-        if (this->pattern[i] == this->pattern[prev_index])
+        if (this->pattern[i] == this->pattern[prev_index]) //if the current and previous element match
         {
             prev_index++;
-            lps_vector.push_back(prev_index);
+            lps_vector.push_back(prev_index); //the current element matches the value of the previous element + 1
 
         }
-        else
+        else //if they do not match
         {
             if (prev_index == 0)
             {
@@ -56,8 +55,41 @@ void KMP::public_LPS()
     std::vector<int> vec = create_LPS();
     for (int i = 0; i < vec.size(); i++)
     {
-        std::cout << vec[i] << ", ";
+        std::cout << vec[i] << ",";
     }
     std::cout << std::endl;
 
+}
+
+void KMP::KMP_algorithm()
+{
+    int pattern_index = 0;
+    int text_index = 0;
+    std::vector LPS = create_LPS();
+    while (text_index < this->text.size()) //this goes through the entire text
+    {
+        while (pattern_index < this->pattern.size()) //this goes through the entire pattern until there is a mismatch
+        {
+            if (this->pattern[pattern_index] != this->text[text_index])
+            {
+                break;
+            }
+            pattern_index++;
+            text_index++;
+        }
+        if (pattern_index == this->pattern.size())
+        {
+            //then it should be a match
+            std::cout << "Found match at position " << (text_index - this->pattern.size()) << std::endl;
+            this->num_matches++;
+            text_index++;
+            pattern_index = LPS[pattern_index - 1];
+        }
+        else
+        {
+            //not a match
+            pattern_index = LPS[pattern_index - 1];
+            text_index++;
+        }
+    }
 }

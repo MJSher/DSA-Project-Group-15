@@ -63,16 +63,16 @@ void KMP::public_LPS()
 
 void KMP::KMP_algorithm()
 {
-    int pattern_index = 0;
-    int text_index = 0;
+    int pattern_index = 0; //starts at 0 because that's the beginning of the pattern
+    int text_index = 0; //starts at beginning of text
     std::vector LPS = create_LPS();
     while (text_index < this->text.size()) //this goes through the entire text
     {
         while (pattern_index < this->pattern.size()) //this goes through the entire pattern until there is a mismatch
         {
-            if (this->pattern[pattern_index] != this->text[text_index])
+            if (this->pattern[pattern_index] != this->text[text_index]) //if there is a mismatch
             {
-                break;
+                break; //check if this break completely from the while loop as I do not want pat and text to increment.
             }
             pattern_index++;
             text_index++;
@@ -82,14 +82,13 @@ void KMP::KMP_algorithm()
             //then it should be a match
             std::cout << "Found match at position " << (text_index - this->pattern.size()) << std::endl;
             this->num_matches++;
-            text_index++;
             pattern_index = LPS[pattern_index - 1];
         }
         else
         {
             //not a match
             pattern_index = LPS[pattern_index - 1];
-            text_index++;
+            //text_index++; //text should not increment when a mismatch occurs
         }
     }
 }

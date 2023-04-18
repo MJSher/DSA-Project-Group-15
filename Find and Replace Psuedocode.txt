@@ -1,0 +1,32 @@
+Find and Replace Puesdocode 
+In terms of what the user will see, this will be how the algorithm works
+-CLA argument will be a single .txt file. Output will be a .txt file as well. 
+-Program asks “What algorithm would you like to use.” [I will call this the algorithm select stage]
+-Once you progress to that stage, the program asks “What word would you like to find?” [The word select stage]
+-Then, the program finds the first instance of that word,  outputs “[word] found at line [line] at position [position].” What would you like to do? [choice stage]
+-Go back:
+-If you go back, you instantly go back to the algorithm selection stage
+-Go to the next instance of the word:
+-Goes to the next instance of the word, either in the next position or the first position of the next line. Basically repeats the choice stage until you have passed the last element of the text. Then, the program ends and the output file is written.  
+-Replace the word:
+-The program asks “Would you like to replace every instance of this word?”
+-Yes: Replaces every instance of the word, either ends the program
+-No (replace once): Replaces that single instance of the word. It then automatically does to the choice stage for the next instance 
+-Done:
+-The program ends, and the output file is written.
+
+
+
+-In terms of what the programmer will do, this will be how the algorithm works
+-You are given a file.txt as the sole CLA. There should be a function that reads the entire text and stores it in a vector of strings, called whole_text. Perhaps this should be part of a new find_and_replace class that is friends with both KMP and Boyer-Moore?
+ -Have a data type that stores what algorithm to use. I am unsure whether to make it a boolean is_KMP (if is_KMP == true, use KMP. if is_KMP == false, use Boyer Moore)
+-For asking what algorithm should you use, you should type “K” (or “k”) for KMP, and “B” (or “b”) for Boyer-More. This should be stored in the Find_and_Replace class as a private variable.
+-Then onto the word select stage: whatever you type in here will be stored as a private string variable “word” in the Find_and_replace class.
+-Now we get onto the word search phase. This is using either the KMP algorithm or the Boyer Moore Algorithm depending on the value of is_KMP. I think that, perhaps, there should be a private int variable storing the current line you are on (starting at 0), and it will test Search_Algorithm() for every line until that search_Algorithm().first == true. (so maybe a while (Search_algorithm(full_text[i]) == false) loop). Once the search algorithm found a match, it has the “found at line [i] at position [first]”, what do you want to do?
+-I am wondering if I should have a position counter too. (I’ll call it j for now), and so, we have the choices stage
+-For next, there will be a “if positions array is empty or j is the last element of the array”, then do search_Algorithm(full_text[i + 1]) [i is line]. Else, then it will repeat the output but it will do at position [j + 1].
+-For replace, you enter what you wanna replace it with, then there will be a choice, but if you replace once, the replacement process essentially just takes the position (first element of the word), and uses str.erase(position, length) to erase the string, then use str.insert(position, replacement_word) to add the new word exactly where the previous word was before. Note that every instance of replace should cause a permanent change to full_text. 
+-For replace all (which is why replace should be a function, specifically a void function?), I think I will have it use each position and each line, I think starting from the first line to the last so that it really replaces all and not just replaces all after line i.
+-For go back, it should go to the algorithm select stage? IDK. I know that I should make each stage a function in of itself.  
+
+

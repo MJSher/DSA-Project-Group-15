@@ -5,6 +5,7 @@ KMP::KMP(std::string input_text, std::string input_pattern)
 {
     this->text = input_text;
     this->pattern = input_pattern;
+    this->num_matches = 0;
 }
 /*The LPS is an essential string that helps dictate how far to skip over if there isn't a match
  * because the LPS already knows what is repeated, saving us time
@@ -61,6 +62,7 @@ void KMP::public_LPS()
 
 }
 
+
 void KMP::KMP_algorithm()
 {
     int pattern_index = 0; //starts at 0 because that's the beginning of the pattern
@@ -105,4 +107,9 @@ void KMP::KMP_algorithm()
             //text_index++; //text should not increment when a mismatch occurs
         }
     }
+}
+
+void KMP::print_num_matches()
+{
+    std::cout << "num matches: " << this->num_matches << std::endl;
 }

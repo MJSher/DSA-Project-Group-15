@@ -13,4 +13,5 @@ public:
     void search(int mode); //so I think I will give a mode that asks for things
     void public_LPS(); //public function for testing. Will delete later.
     void KMP_algorithm();
+    void print_num_matches();
 };

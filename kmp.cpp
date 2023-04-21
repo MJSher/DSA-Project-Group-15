@@ -7,20 +7,13 @@ KMP::KMP(std::string input_text, std::string input_pattern)
     this->pattern = input_pattern;
     this->num_matches = 0;
 }
-/*The LPS is an essential string that helps dictate how far to skip over if there isn't a match
- * because the LPS already knows what is repeated, saving us time
- *To create the LPS, it is essentially a string of numbers that shows how many times an element is repeated
- * So for AAAA the LPS is 0 1 2 3 because the last element of A has 3 previous A's directly behind it
- * However, the counter resets when a new letter is introduced, even when the same letter repeated before
- * so AABA is 0100. B has no B's behind it, and the last A has a B behind it, meaning there are no A's
- * directly behind it.
- * The reason the LPS is a vector and not a string is so that I can more easily access the numbers
- * Counter starts at 0 and is going to be placed in the LPS vector
- * if current matches previous: increase counter by 1
- * if current does not match prev and counter == 0, make counter 0
- * if current does not match prev and counter != 0, counter gains the value of LPS two slots ago*/
 
-
+//This function creates an LPS table, also known as a prefix table
+//LPS stands for "longest prefix which is also a suffix"
+//Basically, the length of shared elements between the first and last parts of the array.
+//Each element of the LPS table shows how long the LPS would be if the index you are at is the last element
+//This table is used to find elements in the text that already show up in the pattern and allows the program
+//to skip them. This allows the KMP algorithm to have a time complexity of O(n)
 std::vector<int> KMP::create_LPS()
 {
     std::vector<int> lps_vector;
@@ -50,7 +43,7 @@ std::vector<int> KMP::create_LPS()
 
     return lps_vector;
 }
-
+//This function allows you to publicly display the LPS.
 void KMP::public_LPS()
 {
     std::vector<int> vec = create_LPS();
@@ -62,9 +55,12 @@ void KMP::public_LPS()
 
 }
 
-
-void KMP::KMP_algorithm()
+//This function
+std::pair<bool, std::vector<int>> KMP::KMP_algorithm()
 {
+    std::vector<int> match_positions = {};
+    bool has_match = false;
+    std::pair<bool, std::vector<int>> return_pair;
     int pattern_index = 0; //starts at 0 because that's the beginning of the pattern
     int text_index = 0; //starts at beginning of text
     std::vector LPS = create_LPS();
@@ -82,7 +78,9 @@ void KMP::KMP_algorithm()
         if (pattern_index == this->pattern.size())
         {
             //then it should be a match
-            std::cout << "Found match at position " << (text_index - this->pattern.size()) << std::endl;
+            //std::cout << "Found match at position " << (text_index - this->pattern.size()) << std::endl;
+            has_match = true;
+            match_positions.push_back(text_index - this->pattern.size());
             this->num_matches++;
             if (pattern_index == 0)
             {
@@ -107,6 +105,9 @@ void KMP::KMP_algorithm()
             //text_index++; //text should not increment when a mismatch occurs
         }
     }
+    return_pair.first = has_match;
+    return_pair.second = match_positions;
+    return return_pair;
 }
 
 void KMP::print_num_matches()

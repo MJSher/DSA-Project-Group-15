@@ -1,6 +1,11 @@
 #include <iostream>
 #define CHARLIM 256
 //CHARLIM = character limit
+int biggest(int data1, int data2) {
+   if(data1 > data2)
+      return data1;
+   return data2;
+}
 void BadCharHeur(string string, int size, int badchar[CHARLIM])
 {
 	for (int i = 0; i < CHARLIM; i++)

@@ -1,16 +1,13 @@
 #include <iostream>
-#include <cmath>
 #include <vector>
-#define CHARLIM 127
-//CHARLIM = character limit
 
-void BadCharHeur(std::string string, int size, int badchar[CHARLIM])
+void BadCharHeur(std::string string, int badchar[127]) //Generates the array used to find the shift.
 {
-    for (int i = 0; i < CHARLIM; i++) {
+    for (int i = 0; i < 127; i++) { //Set the shift for every character to -1.
         badchar[i] = -1;
     }
-    for (int i = 0; i < size; i++) {
-        badchar[(int)string[i]] = i;
+    for (int i = 0; i < string.size(); i++) { //Set the shift for characters in the string to their position in the string.
+        badchar[string[i]] = i;
     }
 
 }
@@ -18,8 +15,8 @@ std::pair<int, std::vector<int>> BMAlgorithim(std::string text, std::string pat)
 {
     int patternLength = pat.size();
     int textLength= text.size();
-    int badChar[CHARLIM];
-    BadCharHeur(pat, textLength, badChar);
+    int badChar[127];
+    BadCharHeur(pat, badChar);
     int shift = 1;
     std::vector<int> locations;
     int found = 0; //used to keep track if at least one match has been found.
@@ -32,13 +29,13 @@ std::pair<int, std::vector<int>> BMAlgorithim(std::string text, std::string pat)
         if (patternIndex < 0) { //This means the whole pattern matches the text
             locations.push_back(shift);
             found = 1;
-            if (shift + patternLength < textLength) {
+            if (shift + patternLength < textLength) { //If the pattern would not go past the edge of the text
                 shift += patternLength - badChar[text[shift + patternLength]];
             } else {
                 shift += 1;
             }
         }
-        else { //The patterns does not match the text;
+        else { //The pattern does not match the text;
             shift += std::max(1, patternIndex - badChar[text[shift + patternIndex]]);
         }
     }

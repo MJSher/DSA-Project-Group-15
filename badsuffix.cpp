@@ -22,7 +22,7 @@ void search(string txt, string pat)
 			j--;
 		if (j < 0)
 		{
-			shift += (shift + alength < blength) alength-badchar[txt[shift + alength]] : 1;
+			shift += if((shift + alength < blength)) alength-badchar[txt[shift + alength]] else 1;
 		}
 		else
 			shift += max(1, j - badchar[txt[shift + j]]);

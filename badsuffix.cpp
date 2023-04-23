@@ -35,7 +35,7 @@ std::pair<int, std::vector<int>> BMAlgorithim(std::string text, std::string pat)
             if (shift + patternLength < textLength) {
                 shift += patternLength - badChar[text[shift + patternLength]];
             } else {
-                shift = 1;
+                shift += 1;
             }
         }
         else { //The patterns does not match the text;

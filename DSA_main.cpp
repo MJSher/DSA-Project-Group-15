@@ -170,10 +170,10 @@ void next_stage(std::pair<bool, std::vector<int>> search_result, int position, i
         KMP algorithm;
         search_result.first = false;
         int i = 1;
-        while (i < document.size() && search_result.first == false)
+        while ((line_index + i) < document.size() && search_result.first == false)
         {
             search_result = algorithm.KMP_algorithm(document[line_index + i], phrase);
-            if (search_result.first)
+            if (search_result.first) //this is the line in which it fails
             {
                 break;
             }
@@ -185,7 +185,14 @@ void next_stage(std::pair<bool, std::vector<int>> search_result, int position, i
         }
         else
         {
-            choice_stage(search_result, search_result.second[0], 0, phrase, (line_index + i), document);
+            if(line_index <= (document.size() - 1))
+            {
+                choice_stage(search_result, search_result.second[0], 0, phrase, (line_index + i), document);
+            }
+            else
+            {
+                std::cout << "No other matches can be found." << std::endl;
+            }
         }
     }
 }

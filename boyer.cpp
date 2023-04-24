@@ -85,3 +85,13 @@ std::pair<bool, std::vector<int>> BMAlgorithim(std::string text, std::string pat
     returnValue.second = locations;
     return returnValue;
 }
+
+int main() { //For testing purposes only, to be removed later
+    std::pair<int, std::vector<int>> returnValue;
+    returnValue = BMAlgorithim("Much, much longer stringly. I think ring should appear at least twice, though still somewhat sparingly.", "ring");
+    //In sample text, 'ring' appears at index 20, 36, 96
+    for (int i = 0; i < returnValue.second.size(); i++) {
+        std::cout << returnValue.second[i] << std::endl;
+    }
+    return 0;
+}

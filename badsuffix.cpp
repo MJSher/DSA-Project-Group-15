@@ -1,5 +1,39 @@
 #include <iostream>
 #include <vector>
+#include <string>
+
+void generateStrongGoodSuffixShift(int *shift, int *borderPos, std::string pattern) {
+    //shift and borderPos is an array with size equal to the pattern + 1.
+    int patternLength=pattern.size();
+    int tempPatLength = patternLength;
+    int j=patternLength+1;
+    borderPos[patternLength]=j; //Set borderPos[patternLength] to patternLength+1.
+    while(tempPatLength>0) {
+        while(j<=patternLength && pattern[tempPatLength-1] != pattern[j-1]) {//If the spot at pattern[temp-1] doesn't equal pattern[j-1]
+            if (shift[j]==0) { //If shift is 0
+                shift[j] = j-tempPatLength; //Set shift to j-temp
+            }
+            j = borderPos[j];
+        }
+        tempPatLength--;
+        j--;
+        borderPos[tempPatLength] = j;
+    }
+}
+
+void generateWeakGoodSuffixShift(int *shift, int *borderPosArr, std::string pattern) { //Preprocess for case 2, when there is no proper suffix.
+    int patternLength = pattern.size();
+    int borderPos = borderPosArr[0];
+    for(int i=0; i <= patternLength; i++) {
+        if(shift[i] == 0) { //If the shift isn't set to anything
+            shift[i] = borderPos; //Set the shift to the borderPos at this location
+        }
+        if (i == borderPos) { //When i = border location
+            borderPos = borderPosArr[borderPos]; //Update the border position to a new one.
+        }
+    }
+}
+
 
 void BadCharHeur(std::string string, int badchar[127]) //Generates the array used to find the shift.
 {

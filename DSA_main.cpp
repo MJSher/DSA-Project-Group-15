@@ -32,9 +32,14 @@ void write_output(std::vector<std::string> & document, std::string file_name);
 //uses whatever algorithm search algorithm that is utilized in the algorithm selection stage
 std::pair<bool, std::vector<int>> algorithm_use(bool is_KMP, std::string text, std::string pattern);
 
+//Boyer-Moore Functions
+void generateStrongGoodSuffixShift(int *shift, int *borderPos, std::string pattern);
+void generateWeakGoodSuffixShift(int *shift, int *borderPosArr, std::string pattern);
+void BadCharHeur(std::string string, int badchar[127]);
+std::pair<bool, std::vector<int>> BMAlgorithim(std::string text, std::string pat);
+
 //only 1 CLA argument
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     std::string file_name = argv[1];
     std::vector<std::string> document = read_file(file_name);
     algorithm_stage(document); //starts the program output
@@ -42,32 +47,26 @@ int main(int argc, char* argv[])
 }
 
 //function definitions
-std::vector<std::string> read_file(std::string file_name)
-{
+std::vector<std::string> read_file(std::string file_name) {
     std::vector<std::string> file_vector = {};
-
     std::ifstream(my_file);
     my_file.open(file_name); //create and open the file named file_name
     std::string line;
-    while (std::getline(my_file, line, '\n'))
-    {
+    while (std::getline(my_file, line, '\n')) {
         file_vector.push_back(line);
     }
-
     my_file.close();
     return file_vector;
 }
 
-void algorithm_stage(std::vector<std::string> & document)
-{
+void algorithm_stage(std::vector<std::string> & document) {
     char algorithm;
     std::cout << "Welcome to the find and replace program!" << std::endl;
     std::cout << "Which algorithm would you like to use? The Knuth-Morris-Pratt(KMP) algorithm or the Boyer-Moore algorithm?" << std::endl;
     std::cout << "(select K (or k) for KMP, and B (or b) for Boyer_Moore)" << std::endl;
     std::cout << "You can also select E to end the program." << std::endl;
     std::cin >> algorithm;
-    switch (algorithm)
-    {
+    switch (algorithm) {
         case 'K':
             word_select_stage(true, document);
             break;
@@ -91,47 +90,31 @@ void algorithm_stage(std::vector<std::string> & document)
     }
 }
 
-void word_select_stage(bool is_KMP, std::vector<std::string> & document)
-{
+void word_select_stage(bool is_KMP, std::vector<std::string> & document) {
     std::string phrase;
-    std::cout << "which phrase do you want to find? (make sure it matches capitalization)" << std::endl;
+    std::cout << "Which phrase do you want to find? (Make sure it matches capitalization.)" << std::endl;
     std::cin >> phrase;
-    if (is_KMP) //if you chose KMP
-    {
-        std::pair<bool, std::vector<int>> results;
-        results.first = false;
-        int counter = 0;
-        while (!results.first && counter < (document.size() - 1)) //makes sure to find the first line with the word
-        {
-            results = algorithm_use(is_KMP, document[counter], phrase);
-            if (results.first == true)
-            {
-                break;
-            }
-            counter++;
+    //if (is_KMP) { //if you chose KMP
+    std::pair<bool, std::vector<int>> results;
+    results.first = false;
+    int counter = 0;
+    while (!results.first && counter < (document.size() - 1)) { //makes sure to find the first line with the word
+        results = algorithm_use(is_KMP, document[counter], phrase);
+        if (results.first == true) {
+            break;
         }
-        if (!results.first) //if there are no matches in the document
-        {
-            std::cout << "This word cannot be found in the document. Try again with another word" << std::endl << std::endl;
-            algorithm_stage(document);
-        }
-        else
-        {
-            //move onto the choice stage
-            choice_stage(is_KMP, results, results.second[0], 0, phrase, counter, document);
-        }
-
+        counter++;
     }
-    else //if you chose Boyer-Moore
-    {
-        std::cout << "The boyer Moore algorithm has not been implemented at this point." << std::endl;
-        std::cout << "Come back later." << std::endl;
-        return;
+    if (!results.first) { //if there are no matches in the document
+        std::cout << "This word cannot be found in the document. Try again with another word" << std::endl << std::endl;
+        algorithm_stage(document);
+    }
+    else { //move onto the choice stage
+        choice_stage(is_KMP, results, results.second[0], 0, phrase, counter, document);
     }
 }
 
-void choice_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> & document)
-{
+void choice_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> & document) {
     //display which word you got
     char choice;
     std::cout << phrase << " was found at this line at index " << position << ":\n";
@@ -140,10 +123,9 @@ void choice_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, 
     std::cout << "\t -Go to the next instance of this word (N)" << std::endl;
     std::cout << "\t -Replace this current word (R)" << std::endl;
     std::cout << "\t -Go back (B)" << std::endl;
-    std::cout << "\t -Finish (F)" << std::endl;
+    std::cout << "\t -End Program (E)" << std::endl;
     std::cin >> choice;
-    switch(choice)
-    {
+    switch(choice) {
         case 'N':
             next_stage(is_KMP, search_result, position, position_index, phrase, line_index, document);
             break;
@@ -162,9 +144,9 @@ void choice_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, 
         case 'b':
             algorithm_stage(document);
             break;
-        case 'F':
+        case 'E':
             return;
-        case 'f':
+        case 'e':
             return;
         default:
             std::cout << "incorrect input. Try again." << std::endl << std::endl;
@@ -173,59 +155,46 @@ void choice_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, 
     }
 }
 
-void next_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> document)
-{
-    std::cout << "test" << std::endl;
-    if (position_index < (search_result.second.size() - 1))
-    {
+void next_stage(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> document) {
+    if (position_index < (search_result.second.size() - 1)) {
         choice_stage(is_KMP, search_result, search_result.second[position_index + 1], (position_index + 1), phrase, line_index, document);
     }
-    else
-    {
+    else {
         search_result.first = false;
         int i = 1;
-        while ((line_index + i) < document.size() && search_result.first == false)
-        {
+        while ((line_index + i) < document.size() && search_result.first == false) {
             search_result = algorithm_use(is_KMP, document[line_index + i], phrase);
-            if (search_result.first) //this is the line in which it fails
-            {
+            if (search_result.first) { //this is the line in which it fails
                 break;
             }
             i++;
         }
-        if (!search_result.first)
-        {
+        if (!search_result.first) {
             std::cout << "No other matches can be found." << std::endl;
             algorithm_stage(document);
         }
-        else
-        {
-            if(line_index <= (document.size() - 1))
-            {
+        else {
+            if(line_index <= (document.size() - 1)) {
                 choice_stage(is_KMP, search_result, search_result.second[0], 0, phrase, (line_index + i), document);
             }
-            else
-            {
+            else {
                 std::cout << "No other matches can be found." << std::endl;
             }
         }
     }
 }
 
-void replace_option(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position_index, std::vector<std::string> &document, int starting_position, std::string old_word, int line_index)
-{
+void replace_option(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position_index, std::vector<std::string> &document, int starting_position, std::string old_word, int line_index) {
     std::string replacement_word;
     char choice;
     std::cout << "what word do you want to replace the phrase(s) with?" << std::endl;
     std::cin >> replacement_word;
-
     std::cout << "would you like to replace every instance of the word or just this instance?" << std::endl;
     std::cout << "\t -Replace All (Y)" << std::endl;
     std::cout << "\t -Just Replace Once (N)" << std::endl;
     std::cin >> choice;
 
-    switch(choice)
-    {
+    switch(choice) {
         case 'Y':
             replace_all(is_KMP, document, old_word, replacement_word);
             break;
@@ -247,33 +216,26 @@ void replace_option(bool is_KMP, std::pair<bool, std::vector<int>> search_result
     }
 }
 
-void replace(std::string &line, int starting_position, std::string old_word, std::string new_word)
-{
+void replace(std::string &line, int starting_position, std::string old_word, std::string new_word) {
     line.erase(starting_position, old_word.size());
     line.insert(starting_position, new_word);
 }
 
-void replace_all(bool is_KMP, std::vector<std::string> &document, std::string old_word, std::string new_word)
-{
+void replace_all(bool is_KMP, std::vector<std::string> &document, std::string old_word, std::string new_word) {
     std::pair<bool, std::vector<int>> results;
-    for (int i = 0; i < document.size(); i++)
-    {
+    for (int i = 0; i < document.size(); i++) {
         results = algorithm_use(is_KMP, document[i], old_word);
-        {
-            for (int j = 0; j < results.second.size(); j++)
-            {
-                replace(document[i], results.second[j], old_word, new_word);
-            }
+        for (int j = 0; j < results.second.size(); j++) {
+            replace(document[i], results.second[j], old_word, new_word);
         }
     }
     char new_choice;
     std::cout << "you have replaced all instances of the word " << old_word << " with " << new_word << ".\n";
     std::cout << "What would you like to do?" << std::endl;
     std::cout << "\t -Pick another word (P)" << std::endl;
-    std::cout << "End Program (E)" << std::endl;
+    std::cout << "\t -End Program (E)" << std::endl;
     std::cin >> new_choice;
-    switch (new_choice)
-    {
+    switch (new_choice) {
         case 'P':
             algorithm_stage(document);
             break;
@@ -282,7 +244,6 @@ void replace_all(bool is_KMP, std::vector<std::string> &document, std::string ol
             break;
         case 'E':
             return;
-
         case 'e':
             return;
         default:
@@ -291,15 +252,13 @@ void replace_all(bool is_KMP, std::vector<std::string> &document, std::string ol
     }
 }
 
-void write_output(std::vector<std::string> &document, std::string file_name)
-{
+void write_output(std::vector<std::string> &document, std::string file_name) {
     std::cout << "The program has now ended!" << std::endl;
-    std::cout << file_name << "_output.txt will now be written:" << std::endl;
+    std::cout << "Written to output_" << file_name << std::endl;
     std::ofstream my_file;
     std::string name = "output_" + file_name;
     my_file.open(name);
-    for (int i = 0; i < document.size(); i++)
-    {
+    for (int i = 0; i < document.size(); i++) {
         my_file << document[i] << "\n";
     }
     my_file.close();
@@ -307,15 +266,13 @@ void write_output(std::vector<std::string> &document, std::string file_name)
 
 }
 
-std::pair<bool, std::vector<int>> algorithm_use(bool is_KMP, std::string text, std::string pattern)
-{
-    if (is_KMP)
-    {
+std::pair<bool, std::vector<int>> algorithm_use(bool is_KMP, std::string text, std::string pattern) {
+    if (is_KMP) {
         KMP algorithm;
         return algorithm.KMP_algorithm(text, pattern);
     }
-    else
-    {
+    else {
+        return BMAlgorithim(text, pattern);
         //Create an instance of the Boyer_Moore class and return its search function
     }
 }

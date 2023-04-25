@@ -1,0 +1,255 @@
+
+The KMP and Boyer Moore  Algorithms -String Search 2; Find and Replace
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Group 15 Members:
+Madison Sherlock
+Alexander Cote
+Andrew Ou
+Gunner Golden
+4/18/2023
+Table of Contents
+
+
+introduction 
+	KMP research
+	Boyer Moore research
+	Topic
+Methods
+KMP
+Boyer Moore
+Implementation
+	KMP
+	Boyer Moore
+Contributions 
+Conclusion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Introduction
+
+Our Group decided to tackle the String Search 2 topic. This topic covers the KMP, and Boyer Moore algorithms. The base Idea of the Knuth-Morris-Pratt algorithm is to utilize a prefix-suffix table to enable more efficient matching than the base naive approach to the problem. The efficiency of the KMP algorithm in preprocessing is O(n) and the search itself is O(m), which leads to a consistent efficiency of O(n+m). 
+
+The Boyer Moore Algorithm on the other hand preprocesses the input before the search, this allows the algorithm to be able to skip ahead in the data it is searching if things go well. The Boyer Moore algorithm has a best case O(n/m) and a worst case scenario of O(nm).
+
+ Each algorithm boasts a higher efficiency than the naive approach, but in comparison with each other they each have ups and downs. The overall purpose of each of these algorithms is to search a string for a specific pattern, and we as a group thought to utilize these different algorithms in a find and replace program that showcases each of these algorithms and their strengths and weaknesses. 
+
+As a group we wanted to select a topic that would explore some of the intricacies of search algorithms, and what those algorithms could be potentially used for in replicating real world concepts. It's why we chose to implement a program using both algorithms to enact a find and replace protocol.
+Methods
+
+The Knuth-Morris-Pratt Algorithm operates in two parts, firstly, a prefix table, also known as a LPS is created, and then the search algorithm itself is enacted, It finds matches by comparing the pattern to the string using the first index in each. If the text to be searched is “abcdefghij” and the pattern to be searched for is “defg” then the algorithm compares the first index of each and continues until a match is found in index 3 of the text and index 0 of the pattern. It will then proceed to check the rest of the indexes.
+
+ However, something magical happens if the pattern you are searching for happens to have a prefix that is also a suffix where a matching error occurs, this is where the LPS comes into play. Instead of starting back at the beginning of the pattern string, if something doesn’t match then the algorithm instead just looks for that suffix, if found, then the search continues on its way. The algorithm is so consistent that the complexity is O(n+m) where the pattern is (n) and the text is (m).
+
+	The Boyer Moore Algorithm does something a little different. Instead of setting up a table of suffixes, it instead pre-processes the pattern string. The algorithm will then compare the pattern with the text to be searched. However when a mismatch occurs it compares the character to the entire pattern and if it doesn't exist, the algorithm shifts past it. However, there is another major point to the algorithm called the Good Suffix. The idea is that if a pattern (series of characters) matches then the algorithm can shift accordingly, shifting full pattern lengths past bad characters. 
+
+Implementation 
+In order to implement our program we had to break this multi part problem into pieces. The KMP algorithm, the Boyer Moore Algorithm, The Menu, And the Replacement Function. 
+
+To start we tackled each algorithm, We created the KMP class, as there were multiple pieces to keep track of. 
+
+class KMP
+{
+
+private:
+    std::string pattern;
+    std::string text;
+    std::vector<int> create_LPS(); //creates LPS string to use for KMP
+    int num_matches; //number of matches
+    friend class Find_Replace;
+public:
+    KMP(); //so the inputs are CLA's
+    void public_LPS(std::string input_text, std::string input_pattern); //public function for testing. Will delete later.
+    std::pair<bool, std::vector<int>> KMP_algorithm(std::string input_text, std::string input_pattern);
+    void print_num_matches();
+};
+
+
+
+Above is the class we created for the KMP Algorithm. The KMP cpp file builds off of this class. 
+
+std::vector<int> KMP::create_LPS()
+{
+    std::vector<int> lps_vector;
+    int prev_index = 0; //prefix. The i in the loop is suffix.
+    lps_vector.push_back(0); //the first element of an LPS vector is always 0
+    for (int i = 1; i < this->pattern.size(); i++) //i is current index
+    {
+        if (this->pattern[i] == this->pattern[prev_index]) //if the current and previous element match
+        {
+            prev_index++;
+            lps_vector.push_back(prev_index); //the current element matches the value of the previous element + 1
+
+        }
+        else //if they do not match
+        {
+            if (prev_index == 0)
+            {
+                lps_vector.push_back(0);
+            }
+            else
+            {
+                prev_index = lps_vector[prev_index - 1];
+                i--;
+            }
+        }
+    }
+
+    return lps_vector;
+
+The above code makes the LPS table discussed in the introduction. The LPs table is what allows the KMP algorithm to use suffixes/prefixes to skip  sections of text. The function starts by creating the vector and then sets up the comparisons using a series of if and else statements. 
+
+This is a backbone piece of the algorithm and stands as an example of what we were trying to accomplish on the KMP side of things. 
+
+Overall the rest of our KMP.cpp contains a public function for our LBS, our conditional for comparison and our print statement.
+
+The Boyer Moore Algorithm did not have as many complex pieces, so we decided not to use a class as a build off point. In our .cpp file we have our strong and weak good suffix shift functions, our bad character heuristic function, and our comparison function. 
+
+Below will showcase one of our functions and how it works. 
+
+void BadCharHeur(std::string string, int badchar[127]) { //Generates the array used to find the shift.
+    for (int i = 0; i < 127; i++) { //Set the shift for every character to -1.
+        badchar[i] = -1;
+    }
+    for (int i = 0; i < string.size(); i++) { //Set the shift for characters in the string to their position in the string.
+        badchar[string[i]] = i;
+    }
+
+}
+
+This takes a string (the pattern) and an array of size 127. The array is this size because it is the number of ASCII characters in C++. The position in the array corresponds to each character. For example 'a' = 97, so it is represented at badchar[97]. The value in the array will represent the amount to shift the pattern by while searching.
+
+The first loop initializes every value of the array to -1 by default. The second loop then goes through the pattern and sets the shift at each character to the position in the pattern. For example, in the pattern 'apple', the shift at badchar[a] will be 0, and the shift at badchar[e] will be 5.
+
+This array is used later to tell how much to shift by. When a character in the text doesn't match a character in the pattern, it looks at this array to see how much to shift by. If the character isn't in the pattern at all, its value in the array will be -1 at that position, and it'll shift the patternLength + 1, moving the entire pattern past that character. If the character is in the pattern, like 'e' in apple, it'll shift it over the pattern length - that value, matching the two characters up.
+
+Next we will showcase a series of data points we used to test our program.
+The main function contains our menu functions, which will allow the user to pick the algorithm the user wants and enact various tasks, including time comparisons and replacing functionality. 
+
+Below is an excerpt of ourMain.cpp code that showcases our replace function. 
+
+ void replace_option(bool is_KMP, std::pair<bool, std::vector<int>> search_result, int position_index, std::vector<std::string> &document, int starting_position, std::string old_word, int line_index) {
+    std::string replacement_word;
+    char choice;
+    std::cout << "what word do you want to replace the phrase(s) with?" << std::endl;
+    std::cin >> replacement_word;
+    std::cout << "would you like to replace every instance of the word or just this instance?" << std::endl;
+    std::cout << "\t -Replace All (Y)" << std::endl;
+    std::cout << "\t -Just Replace Once (N)" << std::endl;
+    std::cin >> choice;
+
+    switch(choice) {
+        case 'Y':
+            replace_all(is_KMP, document, old_word, replacement_word);
+            break;
+        case 'y':
+            replace_all(is_KMP, document, old_word, replacement_word);
+            break;
+        case 'N':
+            replace(document[line_index], starting_position, old_word, replacement_word);
+            next_stage(is_KMP, search_result, starting_position, position_index, old_word, line_index, document);
+            break;
+        case 'n':
+            replace(document[line_index], starting_position, old_word, replacement_word);
+            next_stage(is_KMP, search_result, starting_position, position_index, old_word, line_index, document);
+            break;
+        default:
+            std::cout << "invalid input. Try again." << std::endl;
+            replace_option(is_KMP, search_result, position_index, document, starting_position, old_word, line_index);
+            break;
+    }
+}
+
+
+
+
+Below are the data points used for this graph
+1.
+KMP: 3114 characters, 4 character pattern, time: 0.012
+Boyer: 3114 characters, 4 character pattern, time: 0.008
+2.
+KMP: 6144 characters, 6 character pattern, time: 0.009 
+Boyer: 6144 characters, 6 character pattern, time: 0.008
+3.
+KMP: 6144 characters, 12 character pattern, time: 0.011
+Boyer: 6144 character, 12 character pattern, time: 0.012
+4.
+KMP: 6144 characters, 2 character pattern, time: 0.02
+Boyer: 6144 characters, 2 character pattern, time: 0.024
+5.
+KMP: 6144, 35 character pattern, time: 0.013
+Boyer: 6144, 35 character pattern, time: 0.014
+
+
+
+
+Above is a graph that displays a few points of data we collected using our benchmark function. It was really interesting to dig into this a little, as overall the Boyer-Moore Algorithm was a little slower, losing to KMP in 3 instances, though to be fair, it was by incredibly small margins. As can be seen, Boyer-Moore did better with longer pattern texts, doing poorly compared to KMP when the pattern was just 2 characters, but better than KMP when the pattern was a lengthy 35 characters.
+
+Contributions
+Madison Sherlock - KMP Algorithm class and .cpp, Main Function
+Alex Cote - KMP Algorithm support, Report
+Andrew Ou - Boyer moore algorithm files, presentation
+Gunner Golden - Boyer moore Algorithm files, Main Function support, presentation 
+
+
+
+
+
+Conclusion
+To conclude, we were successful in our goals in creating a program that utilizes 2 separate algorithms to gather data points on said algorithms and provide a find and replace functionality. It was interesting to see the sheer consistency of the KMP algorithm in play, as well as how the Boyer Moore algorithm competed against it. It would be interesting to see even larger data files in use on each algorithm and how they would compare more with each other, but for what we were able to accomplish we feel overall satisfied with the data we were able to get and the functionality we were able to bring into play with each algorithm.
+
+ Find and replace, as a concept, allowed us to better be able to  visualize the use of these algorithms in a real world function. Being able to shift through large files of data is invaluable when it comes to data collection as a whole, and it would be interesting to see how these algorithms interact with data sorting, and other such utility algorithms. 

@@ -98,7 +98,7 @@ void word_select_stage(bool is_KMP, std::vector<std::string> & document) {
     std::pair<bool, std::vector<int>> results;
     results.first = false;
     int counter = 0;
-    while (!results.first && counter < (document.size() - 1)) { //makes sure to find the first line with the word
+    while (!results.first && counter < document.size()) { //makes sure to find the first line with the word
         results = algorithm_use(is_KMP, document[counter], phrase);
         if (results.first == true) {
             break;

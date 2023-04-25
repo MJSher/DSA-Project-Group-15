@@ -1,10 +1,8 @@
 #include "kmp.h"
 
 //constructor: just a simple getter that assigns the private text and pattern functions
-KMP::KMP(std::string input_text, std::string input_pattern)
+KMP::KMP()
 {
-    this->text = input_text;
-    this->pattern = input_pattern;
     this->num_matches = 0;
 }
 
@@ -44,8 +42,11 @@ std::vector<int> KMP::create_LPS()
     return lps_vector;
 }
 //This function allows you to publicly display the LPS.
-void KMP::public_LPS()
+void KMP::public_LPS(std::string input_text, std::string input_pattern)
 {
+    this->text = input_text;
+    this->pattern = input_pattern;
+
     std::vector<int> vec = create_LPS();
     for (int i = 0; i < vec.size(); i++)
     {
@@ -56,8 +57,11 @@ void KMP::public_LPS()
 }
 
 //This function
-std::pair<bool, std::vector<int>> KMP::KMP_algorithm()
+std::pair<bool, std::vector<int>> KMP::KMP_algorithm(std::string input_text, std::string input_pattern)
 {
+    this->text = input_text;
+    this->pattern = input_pattern;
+
     std::vector<int> match_positions = {};
     bool has_match = false;
     std::pair<bool, std::vector<int>> return_pair;

@@ -13,20 +13,22 @@
 //function to read in the file and store it as a vector of strings
 std::vector<std::string> read_file(std::string file_name);
 //function that outputs the algorithm stage: basically selects which algorithm you will pick
-void algorithm_stage(std::vector<std::string> document);
+void algorithm_stage(std::vector<std::string> & document);
 //function that asks which word you will select. is_KMP is your algorithm choice from the first function.
 //is_KMP is true if you selected KMP, and false if you selected Boyer_More
-void word_select_stage(bool is_KMP, std::vector<std::string> document );
+void word_select_stage(bool is_KMP, std::vector<std::string> & document );
 //function that shows the first position you found the line at, and gives you choices on what to do next.
-void choice_stage(std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> document);//function that searches for the next instance of the word
+void choice_stage(std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> & document);//function that searches for the next instance of the word
 //function that moves to the next element of the array
 void next_stage(std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> document);
+//function for deciding if you want to replace once or replace all
+void replace_option(std::pair<bool, std::vector<int>> search_result, int position_index, std::vector<std::string> &document, int starting_position, std::string old_word, int line_index);
 //function that replaces the word with something else (this will alter the line)
-void replace(std::string &line, int starting_position, std::string new_word);
+void replace(std::string &line, int starting_position, std::string old_word, std::string new_word);
 //replaces all instances of the old word with the new word
 void replace_all(std::vector<std::string> &document, std::string old_word, std::string new_word);
 //writes the output file
-void write_output(std::vector<std::string> document);
+void write_output(std::vector<std::string> & document, std::string file_name);
 
 //only 1 CLA argument
 int main(int argc, char* argv[])
@@ -34,6 +36,7 @@ int main(int argc, char* argv[])
     std::string file_name = argv[1];
     std::vector<std::string> document = read_file(file_name);
     algorithm_stage(document); //starts the program output
+    write_output(document, file_name);
 }
 
 //function definitions
@@ -53,12 +56,13 @@ std::vector<std::string> read_file(std::string file_name)
     return file_vector;
 }
 
-void algorithm_stage(std::vector<std::string> document)
+void algorithm_stage(std::vector<std::string> & document)
 {
     char algorithm;
     std::cout << "Welcome to the find and replace program!" << std::endl;
     std::cout << "Which algorithm would you like to use? The Knuth-Morris-Pratt(KMP) algorithm or the Boyer-Moore algorithm?" << std::endl;
     std::cout << "(select K (or k) for KMP, and B (or b) for Boyer_Moore)" << std::endl;
+    std::cout << "You can also select E to end the program." << std::endl;
     std::cin >> algorithm;
     switch (algorithm)
     {
@@ -74,6 +78,10 @@ void algorithm_stage(std::vector<std::string> document)
         case 'b':
             word_select_stage(false, document);
             break;
+        case 'E':
+            return;
+        case 'e':
+            return;
         default:
             std::cout << "That is not an acceptable input. Try again." << std::endl;
             algorithm_stage(document);
@@ -81,7 +89,7 @@ void algorithm_stage(std::vector<std::string> document)
     }
 }
 
-void word_select_stage(bool is_KMP, std::vector<std::string> document)
+void word_select_stage(bool is_KMP, std::vector<std::string> & document)
 {
     std::string phrase;
     std::cout << "which phrase do you want to find? (make sure it matches capitalization)" << std::endl;
@@ -121,7 +129,7 @@ void word_select_stage(bool is_KMP, std::vector<std::string> document)
     }
 }
 
-void choice_stage(std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> document)
+void choice_stage(std::pair<bool, std::vector<int>> search_result, int position, int position_index, std::string phrase, int line_index, std::vector<std::string> & document)
 {
     //display which word you got
     char choice;
@@ -131,6 +139,7 @@ void choice_stage(std::pair<bool, std::vector<int>> search_result, int position,
     std::cout << "\t -Go to the next instance of this word (N)" << std::endl;
     std::cout << "\t -Replace this current word (R)" << std::endl;
     std::cout << "\t -Go back (B)" << std::endl;
+    std::cout << "\t -Finish (F)" << std::endl;
     std::cin >> choice;
     switch(choice)
     {
@@ -141,19 +150,24 @@ void choice_stage(std::pair<bool, std::vector<int>> search_result, int position,
             next_stage(search_result, position, position_index, phrase, line_index, document);
             break;
         case 'R':
-            //
+            replace_option(search_result, position_index, document, position, phrase, line_index);
             break;
         case 'r':
-            //
+            replace_option(search_result, position_index, document, position, phrase, line_index);
             break;
         case 'B':
-            //
+            algorithm_stage(document);
             break;
         case 'b':
-            //
+            algorithm_stage(document);
             break;
+        case 'F':
+            return;
+        case 'f':
+            return;
         default:
-            //
+            std::cout << "incorrect input. Try again." << std::endl << std::endl;
+            choice_stage(search_result, position, position_index, phrase, line_index, document);
             break;
     }
 }
@@ -182,6 +196,7 @@ void next_stage(std::pair<bool, std::vector<int>> search_result, int position, i
         if (!search_result.first)
         {
             std::cout << "No other matches can be found." << std::endl;
+            algorithm_stage(document);
         }
         else
         {
@@ -195,4 +210,99 @@ void next_stage(std::pair<bool, std::vector<int>> search_result, int position, i
             }
         }
     }
+}
+
+void replace_option(std::pair<bool, std::vector<int>> search_result, int position_index, std::vector<std::string> &document, int starting_position, std::string old_word, int line_index)
+{
+    std::string replacement_word;
+    char choice;
+    std::cout << "what word do you want to replace the phrase(s) with?" << std::endl;
+    std::cin >> replacement_word;
+
+    std::cout << "would you like to replace every instance of the word or just this instance?" << std::endl;
+    std::cout << "\t -Replace All (Y)" << std::endl;
+    std::cout << "\t -Just Replace Once (N)" << std::endl;
+    std::cin >> choice;
+
+    switch(choice)
+    {
+        case 'Y':
+            replace_all(document, old_word, replacement_word);
+            break;
+        case 'y':
+            replace_all(document, old_word, replacement_word);
+            break;
+        case 'N':
+            replace(document[line_index], starting_position, old_word, replacement_word);
+            next_stage(search_result, starting_position, position_index, old_word, line_index, document);
+            break;
+        case 'n':
+            replace(document[line_index], starting_position, old_word, replacement_word);
+            next_stage(search_result, starting_position, position_index, old_word, line_index, document);
+            break;
+        default:
+            std::cout << "invalid input. Try again." << std::endl;
+            replace_option(search_result, position_index, document, starting_position, old_word, line_index);
+            break;
+    }
+}
+
+void replace(std::string &line, int starting_position, std::string old_word, std::string new_word)
+{
+    line.erase(starting_position, old_word.size());
+    line.insert(starting_position, new_word);
+}
+
+void replace_all(std::vector<std::string> &document, std::string old_word, std::string new_word)
+{
+    KMP algorithm;
+    std::pair<bool, std::vector<int>> results;
+    for (int i = 0; i < document.size(); i++)
+    {
+        results = algorithm.KMP_algorithm(document[i], old_word);
+        {
+            for (int j = 0; j < results.second.size(); j++)
+            {
+                replace(document[i], results.second[j], old_word, new_word);
+            }
+        }
+    }
+    char new_choice;
+    std::cout << "you have replaced all instances of the word " << old_word << " with " << new_word << ".\n";
+    std::cout << "What would you like to do?" << std::endl;
+    std::cout << "\t -Pick another word (P)" << std::endl;
+    std::cout << "End Program (E)" << std::endl;
+    switch (new_choice)
+    {
+        case 'P':
+            algorithm_stage(document);
+            break;
+        case 'p':
+            algorithm_stage(document);;
+            break;
+        case 'E':
+            return;
+
+        case 'e':
+            return;
+        default:
+            std::cout << "incorrect output." << std::endl;
+            algorithm_stage(document);
+    }
+}
+
+void write_output(std::vector<std::string> &document, std::string file_name)
+{
+    std::cout << "The program has now ended!" << std::endl;
+    std::cout << file_name << "_output.txt will now be written:" << std::endl;
+    std::ofstream my_file;
+    std::string name = "output_" + file_name;
+    my_file.open(name);
+    for (int i = 0; i < document.size(); i++)
+    {
+        my_file << document[i] << "\n";
+    }
+    my_file.close();
+    std::cout << "File output complete!" << std::endl;
+
 }
